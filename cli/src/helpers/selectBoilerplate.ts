@@ -49,13 +49,30 @@ export const selectLayoutFile = ({
 
   const usingTw = packages.tailwind.inUse;
   const usingTRPC = packages.trpc.inUse;
+  const usingWorkOS = packages.workos.inUse;
+
   let layoutFile = "base.tsx";
-  if (usingTRPC && usingTw) {
-    layoutFile = "with-trpc-tw.tsx";
-  } else if (usingTRPC && !usingTw) {
-    layoutFile = "with-trpc.tsx";
-  } else if (!usingTRPC && usingTw) {
-    layoutFile = "with-tw.tsx";
+
+  if (usingWorkOS) {
+    // WorkOS requires AuthKitProvider wrapper
+    if (usingTRPC && usingTw) {
+      layoutFile = "with-workos-trpc-tw.tsx";
+    } else if (usingTRPC && !usingTw) {
+      layoutFile = "with-workos-trpc.tsx";
+    } else if (!usingTRPC && usingTw) {
+      layoutFile = "with-workos-tw.tsx";
+    } else {
+      layoutFile = "with-workos.tsx";
+    }
+  } else {
+    // Standard layouts (no auth provider wrapper needed)
+    if (usingTRPC && usingTw) {
+      layoutFile = "with-trpc-tw.tsx";
+    } else if (usingTRPC && !usingTw) {
+      layoutFile = "with-trpc.tsx";
+    } else if (!usingTRPC && usingTw) {
+      layoutFile = "with-tw.tsx";
+    }
   }
 
   const appSrc = path.join(layoutFileDir, layoutFile);
@@ -101,19 +118,38 @@ export const selectPageFile = ({
 
   const usingTRPC = packages.trpc.inUse;
   const usingTw = packages.tailwind.inUse;
-  const usingAuth = packages.nextAuth.inUse;
+  const usingNextAuth = packages.nextAuth.inUse;
+  const usingWorkOS = packages.workos.inUse;
 
   let indexFile = "base.tsx";
-  if (usingTRPC && usingTw && usingAuth) {
-    indexFile = "with-auth-trpc-tw.tsx";
-  } else if (usingTRPC && !usingTw && usingAuth) {
-    indexFile = "with-auth-trpc.tsx";
-  } else if (usingTRPC && usingTw) {
-    indexFile = "with-trpc-tw.tsx";
-  } else if (usingTRPC && !usingTw) {
-    indexFile = "with-trpc.tsx";
-  } else if (!usingTRPC && usingTw) {
-    indexFile = "with-tw.tsx";
+
+  if (usingWorkOS) {
+    // WorkOS page variants
+    if (usingTRPC && usingTw) {
+      indexFile = "with-workos-trpc-tw.tsx";
+    } else if (usingTRPC && !usingTw) {
+      indexFile = "with-workos-trpc.tsx";
+    } else if (!usingTRPC && usingTw) {
+      indexFile = "with-workos-tw.tsx";
+    } else {
+      indexFile = "with-workos.tsx";
+    }
+  } else if (usingNextAuth) {
+    // NextAuth page variants
+    if (usingTRPC && usingTw) {
+      indexFile = "with-auth-trpc-tw.tsx";
+    } else if (usingTRPC && !usingTw) {
+      indexFile = "with-auth-trpc.tsx";
+    }
+  } else {
+    // No auth page variants
+    if (usingTRPC && usingTw) {
+      indexFile = "with-trpc-tw.tsx";
+    } else if (usingTRPC && !usingTw) {
+      indexFile = "with-trpc.tsx";
+    } else if (!usingTRPC && usingTw) {
+      indexFile = "with-tw.tsx";
+    }
   }
 
   const indexSrc = path.join(indexFileDir, indexFile);

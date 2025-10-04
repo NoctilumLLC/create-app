@@ -7,12 +7,18 @@ export const env = createEnv({
    * isn't built with invalid env vars.
    */
   server: {
+    // NextAuth.js
     AUTH_SECRET:
       process.env.NODE_ENV === "production"
         ? z.string()
         : z.string().optional(),
-    AUTH_DISCORD_ID: z.string(),
-    AUTH_DISCORD_SECRET: z.string(),
+    AUTH_DISCORD_ID: z.string().optional(),
+    AUTH_DISCORD_SECRET: z.string().optional(),
+    // WorkOS AuthKit
+    WORKOS_API_KEY: z.string().optional(),
+    WORKOS_CLIENT_ID: z.string().optional(),
+    WORKOS_COOKIE_PASSWORD: z.string().min(32).optional(),
+    // Database
     DATABASE_URL: z
       .string()
       .url()
@@ -31,7 +37,8 @@ export const env = createEnv({
    * `NEXT_PUBLIC_`.
    */
   client: {
-    // NEXT_PUBLIC_CLIENTVAR: z.string(),
+    // WorkOS redirect URI
+    NEXT_PUBLIC_WORKOS_REDIRECT_URI: z.string().url().optional(),
   },
 
   /**
@@ -42,6 +49,10 @@ export const env = createEnv({
     AUTH_SECRET: process.env.AUTH_SECRET,
     AUTH_DISCORD_ID: process.env.AUTH_DISCORD_ID,
     AUTH_DISCORD_SECRET: process.env.AUTH_DISCORD_SECRET,
+    WORKOS_API_KEY: process.env.WORKOS_API_KEY,
+    WORKOS_CLIENT_ID: process.env.WORKOS_CLIENT_ID,
+    WORKOS_COOKIE_PASSWORD: process.env.WORKOS_COOKIE_PASSWORD,
+    NEXT_PUBLIC_WORKOS_REDIRECT_URI: process.env.NEXT_PUBLIC_WORKOS_REDIRECT_URI,
     DATABASE_URL: process.env.DATABASE_URL,
     NODE_ENV: process.env.NODE_ENV,
   },

@@ -15,7 +15,7 @@ export const getUserPkgManager: () => PackageManager = () => {
       return "npm";
     }
   } else {
-    // If no user agent is set, assume npm
-    return "npm";
+    // If no user agent is set, assume bun
+    return "bun";
   }
 };
