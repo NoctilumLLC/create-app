@@ -25,9 +25,9 @@ export const dependencyVersionMap = {
   "@libsql/client": "^0.14.0",
 
   // TailwindCSS
-  tailwindcss: "^4.0.15",
+  tailwindcss: "^4.1.0",
   postcss: "^8.5.3",
-  "@tailwindcss/postcss": "^4.0.15",
+  "@tailwindcss/postcss": "^4.1.0",
 
   // tRPC
   "@trpc/client": "^11.0.0",
@@ -37,6 +37,37 @@ export const dependencyVersionMap = {
   "@tanstack/react-query": "^5.69.0",
   superjson: "^2.2.1",
   "server-only": "^0.0.1",
+
+  // Expo & React Native
+  expo: "~54.0.0",
+  "expo-router": "~6.0.10",
+  "expo-status-bar": "~3.0.8",
+  "expo-linking": "~8.0.8",
+  "expo-constants": "~18.0.9",
+  "expo-font": "~14.0.8",
+  "expo-splash-screen": "~31.0.10",
+  "react-native": "0.81.4",
+  "react-native-safe-area-context": "~5.6.0",
+  "react-native-screens": "~4.16.0",
+  "react-native-reanimated": "~4.1.1",
+  "react-native-gesture-handler": "~2.28.0",
+  "react-native-web": "^0.21.0",
+
+  // NativeWind (uses Tailwind v3 for now)
+  nativewind: "^4.0.0",
+
+  // React (Expo uses exactly 19.1.0)
+  react: "19.1.0",
+  "react-dom": "19.1.0",
+
+  // shadcn-ui
+  "class-variance-authority": "^0.7.1",
+  clsx: "^2.1.1",
+  "tailwind-merge": "^2.6.0",
+  "lucide-react": "^0.468.0",
+
+  // Monorepo tooling
+  "@moonrepo/cli": "^1.32.0",
 
   // biome
   "@biomejs/biome": "1.9.4",

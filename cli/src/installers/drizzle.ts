@@ -11,14 +11,18 @@ export const drizzleInstaller: Installer = ({
   packages,
   scopedAppName,
   databaseProvider,
+  mode,
 }) => {
+  // Determine the target directory for DB package
+  const dbDir = mode === "monorepo" ? path.join(projectDir, "packages/db") : projectDir;
+
   addPackageDependency({
-    projectDir,
+    projectDir: dbDir,
     dependencies: ["drizzle-kit"],
     devMode: true,
   });
   addPackageDependency({
-    projectDir,
+    projectDir: dbDir,
     dependencies: [
       "drizzle-orm",
       (
@@ -35,22 +39,26 @@ export const drizzleInstaller: Installer = ({
 
   const extrasDir = path.join(PKG_ROOT, "template/extras");
 
+  const usingAuth = packages?.nextAuth.inUse || packages?.workos.inUse;
+
   const configFile = path.join(
     extrasDir,
     `config/drizzle-config-${
       databaseProvider === "planetscale" ? "mysql" : databaseProvider
     }.ts`
   );
-  const configDest = path.join(projectDir, "drizzle.config.ts");
+  const configDest = path.join(dbDir, "drizzle.config.ts");
 
   const schemaSrc = path.join(
     extrasDir,
     "src/server/db/schema-drizzle",
-    packages?.nextAuth.inUse
+    usingAuth
       ? `with-auth-${databaseProvider}.ts`
       : `base-${databaseProvider}.ts`
   );
-  const schemaDest = path.join(projectDir, "src/server/db/schema.ts");
+  const schemaDest = mode === "monorepo"
+    ? path.join(dbDir, "src/schema.ts")
+    : path.join(projectDir, "src/server/db/schema.ts");
 
   // Replace placeholder table prefix with project name
   let schemaContent = fs.readFileSync(schemaSrc, "utf-8");
@@ -67,10 +75,12 @@ export const drizzleInstaller: Installer = ({
     extrasDir,
     `src/server/db/index-drizzle/with-${databaseProvider}.ts`
   );
-  const clientDest = path.join(projectDir, "src/server/db/index.ts");
+  const clientDest = mode === "monorepo"
+    ? path.join(dbDir, "src/client.ts")
+    : path.join(projectDir, "src/server/db/index.ts");
 
   addPackageScript({
-    projectDir,
+    projectDir: dbDir,
     scripts: {
       "db:push": "drizzle-kit push",
       "db:studio": "drizzle-kit studio",

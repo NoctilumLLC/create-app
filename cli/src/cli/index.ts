@@ -43,6 +43,8 @@ interface CliFlags {
   eslint: boolean;
   /** @internal Used in CI */
   biome: boolean;
+  /** @internal Used in CI */
+  mode: "normal" | "monorepo";
 }
 
 interface CliResults {
@@ -50,6 +52,7 @@ interface CliResults {
   packages: AvailablePackages[];
   flags: CliFlags;
   databaseProvider: DatabaseProvider;
+  mode: "normal" | "monorepo";
 }
 
 const defaultOptions: CliResults = {
@@ -71,8 +74,10 @@ const defaultOptions: CliResults = {
     dbProvider: "sqlite",
     eslint: false,
     biome: false,
+    mode: "normal",
   },
   databaseProvider: "sqlite",
+  mode: "normal",
 };
 
 export const runCli = async (): Promise<CliResults> => {
@@ -170,6 +175,12 @@ export const runCli = async (): Promise<CliResults> => {
       "Experimental: Boolean value if we should install biome. Must be used in conjunction with `--CI`.",
       (value) => !!value && value !== "false"
     )
+    /** @experimental - Used for CI E2E tests. Used in conjunction with `--CI` to skip prompting. */
+    .option(
+      "--mode <mode>",
+      "Experimental: Which mode to use - 'normal' or 'monorepo'. Must be used in conjunction with `--CI`.",
+      "normal"
+    )
     /** END CI-FLAGS */
     .version(getVersion(), "-v, --version", "Display the version number")
     .addHelpText(
@@ -211,6 +222,8 @@ export const runCli = async (): Promise<CliResults> => {
     if (cliResults.flags.workos) cliResults.packages.push("workos");
     if (cliResults.flags.eslint) cliResults.packages.push("eslint");
     if (cliResults.flags.biome) cliResults.packages.push("biome");
+    // Set mode from CLI flag
+    cliResults.mode = cliResults.flags.mode;
     if (cliResults.flags.prisma && cliResults.flags.drizzle) {
       // We test a matrix of all possible combination of packages in CI. Checking for impossible
       // combinations here and exiting gracefully is easier than changing the CI matrix to exclude
@@ -270,6 +283,16 @@ export const runCli = async (): Promise<CliResults> => {
               validate: validateAppName,
             }),
         }),
+        mode: () => {
+          return p.select({
+            message: "Would you like a standard app or an app monorepo?",
+            options: [
+              { value: "normal", label: "Standard app" },
+              { value: "monorepo", label: "App monorepo (Web + Expo + shared packages)" },
+            ],
+            initialValue: "normal",
+          });
+        },
         language: () => {
           return p.select({
             message: "Will you be using TypeScript or JavaScript?",
@@ -398,12 +421,14 @@ export const runCli = async (): Promise<CliResults> => {
       packages,
       databaseProvider:
         (project.databaseProvider as DatabaseProvider) || "sqlite",
+      mode: (project.mode as "normal" | "monorepo") || cliResults.flags.mode || "normal",
       flags: {
         ...cliResults.flags,
         appRouter: project.appRouter ?? cliResults.flags.appRouter,
         noGit: !project.git || cliResults.flags.noGit,
         noInstall: !project.install || cliResults.flags.noInstall,
         importAlias: project.importAlias ?? cliResults.flags.importAlias,
+        mode: (project.mode as "normal" | "monorepo") || cliResults.flags.mode || "normal",
       },
     };
   } catch (err) {

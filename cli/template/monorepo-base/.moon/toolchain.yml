@@ -1,0 +1,13 @@
+# moon toolchain configuration
+# https://moonrepo.dev/docs/config/toolchain
+
+$schema: 'https://moonrepo.dev/schemas/toolchain.json'
+
+# Node.js configuration
+node:
+  version: '20.x'
+  packageManager: 'bun'
+
+# Bun configuration
+bun:
+  version: '1.x'

@@ -20,14 +20,25 @@ export const formatProject = async ({
   logger.info(`Formatting project with ${eslint ? "prettier" : "biome"}...`);
   const spinner = ora("Running format command\n").start();
 
-  if (eslint) {
-    await execa(pkgManager, ["run", "format:write"], {
-      cwd: projectDir,
-    });
-  } else if (biome) {
-    await execa(pkgManager, ["run", "check:unsafe"], {
-      cwd: projectDir,
-    });
+  try {
+    if (eslint) {
+      await execa(pkgManager, ["run", "format:write"], {
+        cwd: projectDir,
+      });
+    } else if (biome) {
+      // Use bunx/npx to ensure we can find biome
+      if (pkgManager === "bun") {
+        await execa("bunx", ["--bun", "biome", "check", "--write", "--unsafe", "."], {
+          cwd: projectDir,
+        });
+      } else {
+        await execa(pkgManager, ["run", "check:unsafe"], {
+          cwd: projectDir,
+        });
+      }
+    }
+    spinner.succeed(`${chalk.green("Successfully formatted project")}`);
+  } catch (error) {
+    spinner.warn(`${chalk.yellow("Skipped formatting - you can run it manually later with:")} ${chalk.cyan(pkgManager === "bun" ? "bunx --bun biome check --write ." : `${pkgManager} run check:unsafe`)}`)
   }
-  spinner.succeed(`${chalk.green("Successfully formatted project")}`);
 };

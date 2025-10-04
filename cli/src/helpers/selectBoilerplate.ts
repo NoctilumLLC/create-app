@@ -5,7 +5,7 @@ import { PKG_ROOT } from "~/consts.js";
 import { type InstallerOptions } from "~/installers/index.js";
 
 type SelectBoilerplateProps = Required<
-  Pick<InstallerOptions, "packages" | "projectDir">
+  Pick<InstallerOptions, "packages" | "projectDir" | "mode">
 >;
 // This generates the _app.tsx file that is used to render the app
 export const selectAppFile = ({
@@ -113,6 +113,7 @@ export const selectIndexFile = ({
 export const selectPageFile = ({
   projectDir,
   packages,
+  mode,
 }: SelectBoilerplateProps) => {
   const indexFileDir = path.join(PKG_ROOT, "template/extras/src/app/page");
 
@@ -155,4 +156,14 @@ export const selectPageFile = ({
   const indexSrc = path.join(indexFileDir, indexFile);
   const indexDest = path.join(projectDir, "src/app/page.tsx");
   fs.copySync(indexSrc, indexDest);
+
+  // In monorepo mode, update imports to use @repo/auth instead of ~/server/auth
+  if (mode === "monorepo") {
+    let pageContent = fs.readFileSync(indexDest, "utf-8");
+    pageContent = pageContent.replace(
+      /from "~\/server\/auth"/g,
+      'from "@repo/auth"'
+    );
+    fs.writeFileSync(indexDest, pageContent);
+  }
 };

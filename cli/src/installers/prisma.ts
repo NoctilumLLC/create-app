@@ -10,30 +10,36 @@ export const prismaInstaller: Installer = ({
   projectDir,
   packages,
   databaseProvider,
+  mode,
 }) => {
+  // Determine the target directory for DB package
+  const dbDir = mode === "monorepo" ? path.join(projectDir, "packages/db") : projectDir;
+
   addPackageDependency({
-    projectDir,
+    projectDir: dbDir,
     dependencies: ["prisma"],
     devMode: true,
   });
   addPackageDependency({
-    projectDir,
+    projectDir: dbDir,
     dependencies: ["@prisma/client"],
     devMode: false,
   });
   if (databaseProvider === "planetscale")
     addPackageDependency({
-      projectDir,
+      projectDir: dbDir,
       dependencies: ["@prisma/adapter-planetscale", "@planetscale/database"],
       devMode: false,
     });
 
   const extrasDir = path.join(PKG_ROOT, "template/extras");
 
+  const usingAuth = packages?.nextAuth.inUse || packages?.workos.inUse;
+
   const schemaSrc = path.join(
     extrasDir,
     "prisma/schema",
-    `${packages?.nextAuth.inUse ? "with-auth" : "base"}${
+    `${usingAuth ? "with-auth" : "base"}${
       databaseProvider === "planetscale" ? "-planetscale" : ""
     }.prisma`
   );
@@ -53,7 +59,7 @@ export const prismaInstaller: Installer = ({
       schemaText = schemaText.replace("// @db.Text", "@db.Text");
     }
   }
-  const schemaDest = path.join(projectDir, "prisma/schema.prisma");
+  const schemaDest = path.join(dbDir, "prisma/schema.prisma");
   fs.mkdirSync(path.dirname(schemaDest), { recursive: true });
   fs.writeFileSync(schemaDest, schemaText);
 
@@ -63,10 +69,12 @@ export const prismaInstaller: Installer = ({
       ? "src/server/db/db-prisma-planetscale.ts"
       : "src/server/db/db-prisma.ts"
   );
-  const clientDest = path.join(projectDir, "src/server/db.ts");
+  const clientDest = mode === "monorepo"
+    ? path.join(dbDir, "src/client.ts")
+    : path.join(projectDir, "src/server/db.ts");
 
   addPackageScript({
-    projectDir,
+    projectDir: dbDir,
     scripts: {
       postinstall: "prisma generate",
       "db:push": "prisma db push",

@@ -1,0 +1,34 @@
+$schema: 'https://moonrepo.dev/schemas/project.json'
+
+tasks:
+  dev:
+    command: 'expo start'
+    local: true
+
+  android:
+    command: 'expo start --android'
+    local: true
+
+  ios:
+    command: 'expo start --ios'
+    local: true
+
+  web:
+    command: 'expo start --web'
+    local: true
+
+  typecheck:
+    command: 'tsc --noEmit'
+    inputs:
+      - 'app/**/*'
+      - 'tsconfig.json'
+
+  format:
+    command: 'biome check --write .'
+    inputs:
+      - 'app/**/*'
+
+  lint:
+    command: 'biome check .'
+    inputs:
+      - 'app/**/*'

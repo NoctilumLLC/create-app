@@ -11,6 +11,7 @@ export const logNextSteps = async ({
   noInstall,
   projectDir,
   databaseProvider,
+  mode,
 }: Pick<
   InstallerOptions,
   | "projectName"
@@ -19,6 +20,7 @@ export const logNextSteps = async ({
   | "projectDir"
   | "appRouter"
   | "databaseProvider"
+  | "mode"
 >) => {
   const pkgManager = getUserPkgManager();
 
@@ -62,5 +64,8 @@ export const logNextSteps = async ({
   if (!(await isInsideGitRepo(projectDir)) && !isRootGitRepo(projectDir)) {
     logger.info(`  git init`);
   }
-  logger.info(`  git commit -m "initial commit"`);
+  // Only show git commit message if not in monorepo mode (monorepo auto-commits)
+  if (mode !== "monorepo") {
+    logger.info(`  git commit -m "initial commit"`);
+  }
 };

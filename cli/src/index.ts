@@ -41,6 +41,7 @@ const main = async () => {
     packages,
     flags: { noGit, noInstall, importAlias, appRouter },
     databaseProvider,
+    mode,
   } = await runCli();
 
   const usePackages = buildPkgInstallerMap(packages, databaseProvider);
@@ -56,6 +57,7 @@ const main = async () => {
     importAlias,
     noInstall,
     appRouter,
+    mode,
   });
 
   // Write name to package.json
@@ -94,7 +96,10 @@ const main = async () => {
   }
 
   if (!noGit) {
-    await initializeGit(projectDir);
+    // Create initial commit for monorepo mode (required by moonrepo)
+    await initializeGit(projectDir, {
+      createInitialCommit: mode === "monorepo",
+    });
   }
 
   await logNextSteps({
@@ -104,6 +109,7 @@ const main = async () => {
     noInstall,
     projectDir,
     databaseProvider,
+    mode,
   });
 
   process.exit(0);

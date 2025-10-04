@@ -1,0 +1,37 @@
+$schema: 'https://moonrepo.dev/schemas/project.json'
+
+tasks:
+  dev:
+    command: 'next dev --turbo'
+    local: true
+
+  build:
+    command: 'next build'
+    inputs:
+      - 'src/**/*'
+      - 'public/**/*'
+      - 'next.config.js'
+      - 'package.json'
+    outputs:
+      - '.next'
+
+  start:
+    command: 'next start'
+    deps:
+      - '~:build'
+
+  typecheck:
+    command: 'tsc --noEmit'
+    inputs:
+      - 'src/**/*'
+      - 'tsconfig.json'
+
+  format:
+    command: 'biome check --write .'
+    inputs:
+      - 'src/**/*'
+
+  lint:
+    command: 'biome check .'
+    inputs:
+      - 'src/**/*'

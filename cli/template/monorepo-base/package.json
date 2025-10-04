@@ -1,0 +1,30 @@
+{
+  "name": "create-t3-app",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "bunx --bun @moonrepo/cli run :dev",
+    "dev:web": "bunx --bun @moonrepo/cli run web:dev",
+    "dev:expo": "bunx --bun @moonrepo/cli run expo:dev",
+    "build": "bunx --bun @moonrepo/cli run :build",
+    "build:web": "bunx --bun @moonrepo/cli run web:build",
+    "typecheck": "bunx --bun @moonrepo/cli run :typecheck",
+    "lint": "bunx --bun @moonrepo/cli run :lint",
+    "format": "bunx --bun @moonrepo/cli run :format",
+    "clean": "bunx --bun @moonrepo/cli clean cache"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@moonrepo/cli": "^1.32.0",
+    "@types/node": "^20.14.10",
+    "typescript": "^5.8.2"
+  },
+  "packageManager": "bun@1.1.0",
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}

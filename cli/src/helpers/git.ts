@@ -55,7 +55,10 @@ const getDefaultBranch = () => {
 };
 
 // This initializes the Git-repository for the project
-export const initializeGit = async (projectDir: string) => {
+export const initializeGit = async (
+  projectDir: string,
+  options?: { createInitialCommit?: boolean }
+) => {
   logger.info("Initializing Git...");
 
   if (!isGitInstalled(projectDir)) {
@@ -120,11 +123,22 @@ export const initializeGit = async (projectDir: string) => {
       });
     }
     await execa("git", ["add", "."], { cwd: projectDir });
-    spinner.succeed(
-      `${chalk.green("Successfully initialized and staged")} ${chalk.green.bold(
-        "git"
-      )}\n`
-    );
+
+    // Create initial commit if requested (needed for moonrepo in monorepo mode)
+    if (options?.createInitialCommit) {
+      await execa("git", ["commit", "-m", "initial commit"], { cwd: projectDir });
+      spinner.succeed(
+        `${chalk.green("Successfully initialized")} ${chalk.green.bold(
+          "git"
+        )} ${chalk.green("and created initial commit")}\n`
+      );
+    } else {
+      spinner.succeed(
+        `${chalk.green("Successfully initialized and staged")} ${chalk.green.bold(
+          "git"
+        )}\n`
+      );
+    }
   } catch {
     // Safeguard, should be unreachable
     spinner.fail(

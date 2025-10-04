@@ -14,8 +14,11 @@ export const scaffoldProject = async ({
   projectDir,
   pkgManager,
   noInstall,
+  mode,
 }: InstallerOptions) => {
-  const srcDir = path.join(PKG_ROOT, "template/base");
+  const srcDir = mode === "monorepo"
+    ? path.join(PKG_ROOT, "template/monorepo-base")
+    : path.join(PKG_ROOT, "template/base");
 
   if (!noInstall) {
     logger.info(`\nUsing: ${chalk.cyan.bold(pkgManager)}\n`);
@@ -85,10 +88,14 @@ export const scaffoldProject = async ({
   spinner.start();
 
   fs.copySync(srcDir, projectDir);
-  fs.renameSync(
-    path.join(projectDir, "_gitignore"),
-    path.join(projectDir, ".gitignore")
-  );
+
+  if (mode === "normal") {
+    // Only rename gitignore in normal mode
+    fs.renameSync(
+      path.join(projectDir, "_gitignore"),
+      path.join(projectDir, ".gitignore")
+    );
+  }
 
   const scaffoldedName =
     projectName === "." ? "App" : chalk.cyan.bold(projectName);

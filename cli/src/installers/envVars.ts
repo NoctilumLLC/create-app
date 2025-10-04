@@ -10,6 +10,7 @@ export const envVariablesInstaller: Installer = ({
   packages,
   databaseProvider,
   scopedAppName,
+  mode,
 }) => {
   const usingNextAuth = packages?.nextAuth.inUse;
   const usingWorkOS = packages?.workos.inUse;
@@ -41,18 +42,20 @@ export const envVariablesInstaller: Installer = ({
     if (usingNextAuth || usingWorkOS) envFile = "with-auth.js";
   }
 
+  const webAppDir = mode === "monorepo" ? path.join(projectDir, "apps/web") : projectDir;
+
   if (envFile !== "") {
     const envSchemaSrc = path.join(
       PKG_ROOT,
       "template/extras/src/env",
       envFile
     );
-    const envSchemaDest = path.join(projectDir, "src/env.js");
+    const envSchemaDest = path.join(webAppDir, "src/env.js");
     fs.copyFileSync(envSchemaSrc, envSchemaDest);
   }
 
-  const envDest = path.join(projectDir, ".env");
-  const envExampleDest = path.join(projectDir, ".env.example");
+  const envDest = path.join(webAppDir, ".env");
+  const envExampleDest = path.join(webAppDir, ".env.example");
 
   const _exampleEnvContent = exampleEnvContent + envContent;
 

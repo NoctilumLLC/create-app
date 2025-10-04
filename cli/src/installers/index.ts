@@ -43,6 +43,7 @@ export interface InstallerOptions {
   projectName: string;
   scopedAppName: string;
   databaseProvider: DatabaseProvider;
+  mode: "normal" | "monorepo";
 }
 
 export type Installer = (opts: InstallerOptions) => void;

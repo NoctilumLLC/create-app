@@ -24,6 +24,7 @@ interface CreateProjectOptions {
   importAlias: string;
   appRouter: boolean;
   databaseProvider: DatabaseProvider;
+  mode: "normal" | "monorepo";
 }
 
 export const createProject = async ({
@@ -33,6 +34,7 @@ export const createProject = async ({
   noInstall,
   appRouter,
   databaseProvider,
+  mode,
 }: CreateProjectOptions) => {
   const pkgManager = getUserPkgManager();
   const projectDir = path.resolve(process.cwd(), projectName);
@@ -46,6 +48,7 @@ export const createProject = async ({
     noInstall,
     appRouter,
     databaseProvider,
+    mode,
   });
 
   // Install the selected packages
@@ -58,21 +61,24 @@ export const createProject = async ({
     noInstall,
     appRouter,
     databaseProvider,
+    mode,
   });
 
   // Select necessary _app,index / layout,page files
+  const webAppDir = mode === "monorepo" ? path.join(projectDir, "apps/web") : projectDir;
+
   if (appRouter) {
     // Replace next.config
     fs.copyFileSync(
       path.join(PKG_ROOT, "template/extras/config/next-config-appdir.js"),
-      path.join(projectDir, "next.config.js")
+      path.join(webAppDir, "next.config.js")
     );
 
-    selectLayoutFile({ projectDir, packages });
-    selectPageFile({ projectDir, packages });
+    selectLayoutFile({ projectDir: webAppDir, packages, mode });
+    selectPageFile({ projectDir: webAppDir, packages, mode });
   } else {
-    selectAppFile({ projectDir, packages });
-    selectIndexFile({ projectDir, packages });
+    selectAppFile({ projectDir: webAppDir, packages });
+    selectIndexFile({ projectDir: webAppDir, packages });
   }
 
   // If no tailwind, select use css modules
@@ -82,7 +88,7 @@ export const createProject = async ({
       "template/extras/src/index.module.css"
     );
     const indexModuleCssDest = path.join(
-      projectDir,
+      webAppDir,
       "src",
       appRouter ? "app" : "pages",
       "index.module.css"
