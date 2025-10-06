@@ -68,6 +68,7 @@ export const dependencyVersionMap = {
 
   // Monorepo tooling
   "@moonrepo/cli": "^1.32.0",
+  "dotenv-cli": "^8.0.0",
 
   // biome
   "@biomejs/biome": "1.9.4",

@@ -54,8 +54,9 @@ export const envVariablesInstaller: Installer = ({
     fs.copyFileSync(envSchemaSrc, envSchemaDest);
   }
 
-  const envDest = path.join(webAppDir, ".env");
-  const envExampleDest = path.join(webAppDir, ".env.example");
+  // In monorepo mode, .env files go to the root; otherwise in the app directory
+  const envDest = mode === "monorepo" ? path.join(projectDir, ".env") : path.join(webAppDir, ".env");
+  const envExampleDest = mode === "monorepo" ? path.join(projectDir, ".env.example") : path.join(webAppDir, ".env.example");
 
   const _exampleEnvContent = exampleEnvContent + envContent;
 

@@ -1,0 +1,22 @@
+# moon workspace configuration
+# https://moonrepo.dev/docs/config/workspace
+
+$schema: 'https://moonrepo.dev/schemas/workspace.json'
+
+# Define all projects in the monorepo
+projects:
+  # Apps
+  web: 'apps/web'
+  expo: 'apps/expo'
+
+  # Packages
+  api: 'packages/api'
+  db: 'packages/db'
+  auth: 'packages/auth'
+  ui: 'packages/ui'
+  config: 'packages/config'
+
+# Version control configuration
+vcs:
+  manager: 'git'
+  defaultBranch: 'main'

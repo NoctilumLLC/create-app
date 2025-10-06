@@ -43,6 +43,13 @@ export const expoInstaller: Installer = ({ projectDir, projectName }) => {
     devMode: true,
   });
 
+  // Add dotenv-cli for loading .env from root
+  addPackageDependency({
+    projectDir: expoAppDir,
+    dependencies: ["dotenv-cli"],
+    devMode: true,
+  });
+
   // Update app.json with project name
   const appJsonPath = path.join(expoAppDir, "app.json");
   let appJsonContent = fs.readFileSync(appJsonPath, "utf-8");

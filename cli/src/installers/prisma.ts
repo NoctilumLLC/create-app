@@ -32,6 +32,15 @@ export const prismaInstaller: Installer = ({
       devMode: false,
     });
 
+  // In monorepo mode, add dotenv-cli to load .env from root
+  if (mode === "monorepo") {
+    addPackageDependency({
+      projectDir: dbDir,
+      dependencies: ["dotenv-cli"],
+      devMode: true,
+    });
+  }
+
   const extrasDir = path.join(PKG_ROOT, "template/extras");
 
   const usingAuth = packages?.nextAuth.inUse || packages?.workos.inUse;
@@ -73,16 +82,38 @@ export const prismaInstaller: Installer = ({
     ? path.join(dbDir, "src/client.ts")
     : path.join(projectDir, "src/server/db.ts");
 
+  // In monorepo mode, use dotenv-cli to load .env from root
+  const envPrefix = mode === "monorepo" ? "dotenv -e ../../.env -- " : "";
+
   addPackageScript({
     projectDir: dbDir,
     scripts: {
       postinstall: "prisma generate",
-      "db:push": "prisma db push",
-      "db:studio": "prisma studio",
-      "db:generate": "prisma migrate dev",
-      "db:migrate": "prisma migrate deploy",
+      "db:push": `${envPrefix}prisma db push`,
+      "db:studio": `${envPrefix}prisma studio`,
+      "db:generate": `${envPrefix}prisma migrate dev`,
+      "db:migrate": `${envPrefix}prisma migrate deploy`,
     },
   });
 
   fs.copySync(clientSrc, clientDest);
+
+  // In monorepo mode, replace ~/env imports with process.env since env validation
+  // happens in the consuming apps, not in the shared db package
+  if (mode === "monorepo") {
+    let clientContent = fs.readFileSync(clientDest, "utf-8");
+    clientContent = clientContent.replace(
+      /import { env } from "~\/env";?\n/g,
+      ""
+    );
+    clientContent = clientContent.replace(
+      /env\.NODE_ENV/g,
+      'process.env.NODE_ENV'
+    );
+    clientContent = clientContent.replace(
+      /env\.DATABASE_URL/g,
+      'process.env.DATABASE_URL!'
+    );
+    fs.writeFileSync(clientDest, clientContent);
+  }
 };

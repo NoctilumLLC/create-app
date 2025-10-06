@@ -37,6 +37,15 @@ export const drizzleInstaller: Installer = ({
     devMode: false,
   });
 
+  // In monorepo mode, add dotenv-cli to load .env from root
+  if (mode === "monorepo") {
+    addPackageDependency({
+      projectDir: dbDir,
+      dependencies: ["dotenv-cli"],
+      devMode: true,
+    });
+  }
+
   const extrasDir = path.join(PKG_ROOT, "template/extras");
 
   const usingAuth = packages?.nextAuth.inUse || packages?.workos.inUse;
@@ -79,13 +88,16 @@ export const drizzleInstaller: Installer = ({
     ? path.join(dbDir, "src/client.ts")
     : path.join(projectDir, "src/server/db/index.ts");
 
+  // In monorepo mode, use dotenv-cli to load .env from root
+  const envPrefix = mode === "monorepo" ? "dotenv -e ../../.env -- " : "";
+
   addPackageScript({
     projectDir: dbDir,
     scripts: {
-      "db:push": "drizzle-kit push",
-      "db:studio": "drizzle-kit studio",
-      "db:generate": "drizzle-kit generate",
-      "db:migrate": "drizzle-kit migrate",
+      "db:push": `${envPrefix}drizzle-kit push`,
+      "db:studio": `${envPrefix}drizzle-kit studio`,
+      "db:generate": `${envPrefix}drizzle-kit generate`,
+      "db:migrate": `${envPrefix}drizzle-kit migrate`,
     },
   });
 
@@ -94,4 +106,36 @@ export const drizzleInstaller: Installer = ({
   fs.writeFileSync(schemaDest, schemaContent);
   fs.writeFileSync(configDest, configContent);
   fs.copySync(clientSrc, clientDest);
+
+  // In monorepo mode, replace ~/env imports with process.env since env validation
+  // happens in the consuming apps, not in the shared db package
+  if (mode === "monorepo") {
+    let clientContent = fs.readFileSync(clientDest, "utf-8");
+    clientContent = clientContent.replace(
+      /import { env } from "~\/env";?\n/g,
+      ""
+    );
+    clientContent = clientContent.replace(
+      /env\.NODE_ENV/g,
+      'process.env.NODE_ENV'
+    );
+    clientContent = clientContent.replace(
+      /env\.DATABASE_URL/g,
+      'process.env.DATABASE_URL!'
+    );
+    // For Drizzle, also update the schema import path in monorepo mode
+    clientContent = clientContent.replace(
+      /from "\.\/schema"/g,
+      'from "./schema"'
+    );
+    fs.writeFileSync(clientDest, clientContent);
+
+    // Also update index.ts to export schema in monorepo mode
+    const indexPath = path.join(dbDir, "src/index.ts");
+    const indexContent = `// Database exports
+export { db } from "./client";
+export * as schema from "./schema";
+`;
+    fs.writeFileSync(indexPath, indexContent);
+  }
 };

@@ -1,0 +1,4 @@
+$schema: 'https://moonrepo.dev/schemas/project.json'
+
+# Config package doesn't have tasks since it only provides configuration
+tasks: {}
